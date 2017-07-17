@@ -1,0 +1,17 @@
+%h2 Hello from Roda!
+.panel.panel-default
+  .panel-heading Your tweets
+  %table.table.table-striped
+    %thead
+      %tr
+        %th ID
+        %th Author
+        %th Text
+        %th Created at
+    %tbody
+      -@tweets.each do |tweet|
+        %tr
+          %td=tweet[:id]
+          %td=tweet[:author]
+          %td=tweet[:text]
+          %td=tweet[:created_at]

@@ -1,0 +1,18 @@
+version: "3"
+services:
+  web:
+    build: .
+    command: bundle exec puma -v config.ru
+    ports:
+      - "80:9292"
+  db:
+    image: mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_USER:
+      MYSQL_PASSWORD:
+      MYSQL_DATABASE:
+    volumes:
+      - db-data:/var/lib/mysql
+volumes:
+  db-data:
