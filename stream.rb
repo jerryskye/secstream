@@ -3,21 +3,18 @@ require 'twitter'
 require 'yaml'
 
 config = YAML.load_file 'config.yml'
-DB = Sequel.connect(config)
+DB = Sequel.connect(config[:db])
+users = DB[:users]
 
-client = Twitter::Streaming::Client.new do |conf|
-  conf.consumer_key = config[:consumer_key]
-  conf.consumer_secret = config[:consumer_secret]
-  conf.access_token = config[:access_token]
-  conf.access_token_secret = config[:access_token_secret]
-end
+client = Twitter::Streaming::Client.new(config[:client])
 
-client.filter(config[:filter]) do |tweet|
+client.filter(follow: users.map(:id).join(",")) do |tweet|
   begin
     case tweet
     when Twitter::Tweet
-      unless tweet.retweet?
-        tw = {id: tweet.id, text: tweet.full_text, author: tweet.user.screen_name, created_at: tweet.created_at, hashtags: tweet.hashtags?? tweet.hashtags.map(&:text).join(",") : nil}
+      user = users.where(id: tweet.user.id).first
+      unless user.nil?
+        tw = {id: tweet.id, text: tweet.full_text, author: user[:screen_name], created_at: tweet.created_at, hashtags: tweet.hashtags?? tweet.hashtags.map(&:text).join(",") : nil}
         DB[:tweets].insert(tw)
         puts "#{tw[:author]} just tweeted"
         STDOUT.flush
