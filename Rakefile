@@ -14,10 +14,10 @@ end
 
 desc "Populate the users table"
 task :update_users => 'db:migrate' do
+  puts "Populating the users table"
   DB = Sequel.connect(config[:db])
   users = YAML.load_file 'users.yml'
   require 'twitter'
-  #client = YAML.load_file 'client.yml'
   client = Twitter::REST::Client.new(config[:client])
   users_dataset = DB[:users]
   users_dataset.exclude(screen_name: users).delete
