@@ -8,6 +8,7 @@
         %th Author
         %th Text
         %th Created at
+        %th Hashtags
     %tbody
       -@tweets.each do |tweet|
         %tr
@@ -15,3 +16,4 @@
           %td=tweet[:author]
           %td=tweet[:text]
           %td=tweet[:created_at]
+          %td=tweet[:hashtags]

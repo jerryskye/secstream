@@ -7,4 +7,3 @@ WORKDIR $APP_HOME
 RUN mkdir public
 COPY . $APP_HOME/
 RUN bundle install
-RUN rake db:migrate
