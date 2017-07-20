@@ -1,19 +1,20 @@
-%h2 Hello from Roda!
+%ul.nav.nav-pills.nav-justified
+  %li.active{role: 'presentation'}
+    %a{href: url('/')} All tweets
+  %li{role: 'presentation'}
+    %a{href: url('/with_hashtags')} Tweets with hashtags
+  %li{role: 'presentation'}
+    %a{href: url('/stats')} Hashtag statistics
 .panel.panel-default
-  .panel-heading Your tweets
   %table.table.table-striped
     %thead
       %tr
-        %th ID
         %th Author
         %th Text
         %th Created at
-        %th Hashtags
     %tbody
       -@tweets.each do |tweet|
         %tr
-          %td=tweet[:id]
           %td=tweet[:author]
           %td=tweet[:text]
           %td=tweet[:created_at]
-          %td=tweet[:hashtags]

@@ -25,8 +25,8 @@ task :update_users => 'db:migrate' do
   progressbar = ProgressBar.create(:total => users.count,
                                    :format => '%t: %c/%C |%B|')
   users.each do |screen_name|
-    user_id = client.user(screen_name).id
-    unless users_dataset.where(id: user_id, screen_name: screen_name).count > 0
+    unless users_dataset.where(screen_name: screen_name).count > 0
+      user_id = client.user(screen_name).id
       users_dataset.insert(id: user_id, screen_name: screen_name)
     end
     progressbar.increment

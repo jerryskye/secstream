@@ -1,0 +1,22 @@
+%ul.nav.nav-pills.nav-justified
+  %li{role: 'presentation'}
+    %a{href: url('/')} All tweets
+  %li{role: 'presentation'}
+    %a{href: url('/with_hashtags')} Tweets with hashtags
+  %li.active{role: 'presentation'}
+    %a{href: url('/stats')} Hashtag statistics
+.panel.panel-default
+  %table.table.table-striped
+    %thead
+      %tr
+        %th Hashtag
+        %th No. of tweets
+        %th First observed
+        %th Last observed
+    %tbody
+      -@hashtags.each do |hashtag|
+        %tr
+          %td=hashtag[:hashtag]
+          %td=hashtag[:count]
+          %td=hashtag[:first_observed]
+          %td=hashtag[:last_observed]
