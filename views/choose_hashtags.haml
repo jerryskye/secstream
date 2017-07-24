@@ -1,24 +1,23 @@
 %ul.nav.nav-pills.nav-justified
   %li{role: 'presentation'}
     %a{href: url('/')} All tweets
-  %li.active{role: 'presentation'}
+  %li{role: 'presentation'}
     %a{href: url('/with_hashtags')} Tweets with hashtags
   %li{role: 'presentation'}
     %a{href: url('/stats')} Hashtag statistics
-  %li{role: 'presentation'}
+  %li.active{role: 'presentation'}
     %a{href: url('/choose_hashtags')} Choose which hashtags to track
 .panel.panel-default
   %table.table.table-striped
     %thead
       %tr
-        %th Author
-        %th Text
-        %th Created at
-        %th Hashtags
+        %th Hashtag
+        %th Track?
     %tbody
-      -@tweets_with_hashtags.each do |tweet|
-        %tr
-          %td=tweet[:author]
-          %td=tweet[:text]
-          %td=tweet[:created_at]
-          %td=tweet[:hashtags]
+      %form{action: url('/choose_hashtags'), method: 'post'}
+        -@hashtags.each do |hashtag|
+          %tr
+            %td=hashtag[:hashtag]
+            %td
+              %input{type: 'checkbox', name: "hashtags[#{hashtag[:id]}]"}
+        %input{type: 'submit'}

@@ -4,6 +4,9 @@ services:
     build: .
     command: bundle exec puma -v config.ru
     ports:
+      - "80:9292"
+    environment:
+      REDIS_URL: redis://redis:6379
   db:
     image: mysql
     environment:
@@ -13,8 +16,19 @@ services:
       MYSQL_DATABASE: secstream
     volumes:
       - db-data:/var/lib/mysql
-  stream:
+  redis:
+    image: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+  sidekiq:
     build: .
-    command: ruby stream.rb
+    command: bundle exec sidekiq -r ./stream.rb
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - redis
+      - db
 volumes:
   db-data:
+  redis-data:

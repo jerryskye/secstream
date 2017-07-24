@@ -4,18 +4,19 @@ require 'yaml'
 
 task :default => :tinker
 config = YAML.load_file('config.yml')
+DB = Sequel.connect(config[:db])
 
-desc "Play with the DB"
+desc "Play with the app"
 task :tinker do
-  DB = Sequel.connect(config[:db])
   require 'pry'
+  require 'sidekiq'
+  require_relative 'stream'
   pry
 end
 
 desc "Populate the users table"
 task :update_users => 'db:migrate' do
   puts "Populating the users table"
-  DB = Sequel.connect(config[:db])
   users = YAML.load_file 'users.yml'
   require 'twitter'
   client = Twitter::REST::Client.new(config[:client])
@@ -33,17 +34,27 @@ task :update_users => 'db:migrate' do
   end
 end
 
+desc "Start the user stream"
+task :user_stream => :update_users do
+  require 'sidekiq'
+  require_relative 'stream'
+  puts 'Starting the user stream'
+  jid = Sidekiq.redis {|r| r.get('user_stream_jid')}
+  StreamWorker.cancel!(jid) unless jid.nil?
+  jid = StreamWorker.perform_async(follow: DB[:users].map(:id).join(','))
+  Sidekiq.redis {|r| r. set('user_stream_jid', jid)}
+end
+
 namespace :db do
   desc "Run migrations"
   task :migrate, [:version] do |t, args|
     Sequel.extension :migration
-    db = Sequel.connect(config[:db])
     if args[:version]
       puts "Migrating to version #{args[:version]}"
-      Sequel::Migrator.run(db, "migrations", target: args[:version].to_i)
+      Sequel::Migrator.run(DB, "migrations", target: args[:version].to_i)
     else
       puts "Migrating to latest"
-      Sequel::Migrator.run(db, "migrations")
+      Sequel::Migrator.run(DB, "migrations")
     end
   end
 end

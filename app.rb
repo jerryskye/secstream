@@ -1,6 +1,9 @@
 require 'roda'
 require 'sequel'
 require 'yaml'
+require 'twitter'
+require 'sidekiq'
+require_relative 'stream'
 
 class App < Roda
   plugin :public
@@ -33,7 +36,18 @@ class App < Roda
         .join(:tweets, :id => :tweet_id)
         .group_and_count(:hashtag_id)
         .select_append(:hashtag, Sequel::SQL::Function.new(:min, :created_at).as(:first_observed), Sequel::SQL::Function.new(:max, :created_at).as(:last_observed))
+        .order(Sequel.desc(:last_observed))
       view :stats
+    end
+
+    r.get 'choose_hashtags' do
+      @hashtags = DB[:hashtags].order(Sequel.desc(:id))
+      view :choose_hashtags
+    end
+
+    r.post 'choose_hashtags' do
+      hashtags = DB[:hashtags].where(id: r['hashtags'].keys.map(&:to_i)).map(:hashtag).join(',')
+      StreamWorker.perform_async(track: hashtags)
     end
 
     r.public
