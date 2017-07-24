@@ -3,7 +3,7 @@ Sequel.migration do
     create_table :tweets do
       Bignum :id, :unique => true, :primary_key => true, :null => false
       Time :created_at
-      String :text
+      Text :text
       String :author
     end
   end

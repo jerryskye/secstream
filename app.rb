@@ -47,7 +47,10 @@ class App < Roda
 
     r.post 'choose_hashtags' do
       hashtags = DB[:hashtags].where(id: r['hashtags'].keys.map(&:to_i)).map(:hashtag).join(',')
-      StreamWorker.perform_async(track: hashtags)
+      jid = Sidekiq.redis {|r| r.get('hashtag_stream_jid')}
+      StreamWorker.cancel!(jid) unless jid.nil?
+      jid = StreamWorker.perform_async(track: hashtags)
+      Sidekiq.redis {|r| r. set('hashtag_stream_jid', jid)}
     end
 
     r.public

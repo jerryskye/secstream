@@ -11,27 +11,24 @@ class StreamWorker
 
   def perform(args)
     client = Twitter::Streaming::Client.new(CONFIG[:client])
+    check_for_user = args.has_key? 'follow'
     client.filter(args) do |tweet|
       begin
         if tweet.is_a? Twitter::Tweet
-          user = DB[:users].where(id: tweet.user.id).first
-          unless user.nil?
-            tw = {id: tweet.id, text: tweet.full_text, author: user[:screen_name], created_at: tweet.created_at}
-            DB[:tweets].insert(tw)
-            puts "#{tw[:author]} just tweeted"
-            if tweet.hashtags?
-              tweet.hashtags.each do |hashtag|
-                hashtag_id = DB[:hashtags].select(:id).where(hashtag: hashtag.text).get(:id) || DB[:hashtags].insert(hashtag: hashtag.text)
-                DB[:hashtags_tweets].insert(hashtag_id: hashtag_id, tweet_id: tweet.id)
-              end
+          next if DB[:users].where(id: tweet.user.id).first.nil? and check_for_user
+          tw = {id: tweet.id, text: tweet.full_text, author: tweet.user.screen_name, created_at: tweet.created_at}
+          DB[:tweets].insert(tw)
+          puts "#{tw[:author]} just tweeted"
+          if tweet.hashtags?
+            tweet.hashtags.each do |hashtag|
+              hashtag_id = DB[:hashtags].select(:id).where(hashtag: hashtag.text).get(:id) || DB[:hashtags].insert(hashtag: hashtag.text)
+              DB[:hashtags_tweets].insert(hashtag_id: hashtag_id, tweet_id: tweet.id)
             end
-            STDOUT.flush
           end
         end
       rescue => e
         puts "#{e.class} while processing #{tweet.id}: #{e}"
         puts e.backtrace
-        STDOUT.flush
       ensure
         return if cancelled?
       end
