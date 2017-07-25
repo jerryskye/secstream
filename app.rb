@@ -28,7 +28,7 @@ class App < Roda
         .select(:author, :text, :created_at, Sequel::SQL::Function.new(:group_concat, :hashtag).as(:hashtags))
         .order(Sequel.desc(:created_at))
         .group(:tweet_id)
-      view :hashtags
+      view :with_hashtags
     end
 
     r.get 'stats' do
@@ -46,11 +46,17 @@ class App < Roda
     end
 
     r.post 'choose_hashtags' do
-      hashtags = DB[:hashtags].where(id: r['hashtags'].keys.map(&:to_i)).map(:hashtag).join(',')
+      r.redirect url('/choose_hashtags') if r['hashtags'].nil?
+      hashtags = DB[:hashtags].where(id: r['hashtags'].map(&:to_i)).map(:hashtag).join(',')
       jid = Sidekiq.redis {|r| r.get('hashtag_stream_jid')}
       StreamWorker.cancel!(jid) unless jid.nil?
       jid = StreamWorker.perform_async(track: hashtags)
       Sidekiq.redis {|r| r. set('hashtag_stream_jid', jid)}
+    end
+
+    r.get 'hashtag', Integer do |hashtag_id|
+      @tweets = DB[:hashtags_tweets].where(hashtag_id: hashtag_id).join(:tweets, :id => :tweet_id)
+      view :hashtag
     end
 
     r.public

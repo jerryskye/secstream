@@ -1,0 +1,22 @@
+%ul.nav.nav-pills.nav-justified
+  %li{role: 'presentation'}
+    %a{href: url('/')} All tweets
+  %li{role: 'presentation'}
+    %a{href: url('/with_hashtags')} Tweets with hashtags
+  %li{role: 'presentation'}
+    %a{href: url('/stats')} Hashtag statistics
+  %li{role: 'presentation'}
+    %a{href: url('/choose_hashtags')} Choose which hashtags to track
+.panel.panel-default
+  %table.table.table-striped
+    %thead
+      %tr
+        %th Author
+        %th Text
+        %th Created at
+    %tbody
+      -@tweets.each do |tweet|
+        %tr
+          %td=tweet[:author]
+          %td=tweet[:text]
+          %td=tweet[:created_at]

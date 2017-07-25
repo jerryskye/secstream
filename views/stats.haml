@@ -8,13 +8,14 @@
   %li{role: 'presentation'}
     %a{href: url('/choose_hashtags')} Choose which hashtags to track
 .panel.panel-default
-  %table.table.table-striped
+  %table.table.table-hover
     %thead
       %tr
         %th Hashtag
         %th No. of tweets
         %th First observed
         %th Last observed
+        %th All tweets for hashtag
     %tbody
       -@hashtags.each do |hashtag|
         %tr
@@ -22,3 +23,5 @@
           %td=hashtag[:count]
           %td=hashtag[:first_observed]
           %td=hashtag[:last_observed]
+          %td
+            %a{href: url("/hashtag/#{hashtag[:hashtag_id]}")} Tweets
