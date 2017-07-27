@@ -12,13 +12,13 @@ class StreamWorker
   def perform(args)
     client = Twitter::Streaming::Client.new(CONFIG[:client])
     check_for_user = args.has_key? 'follow'
+    puts args
     client.filter(args) do |tweet|
       begin
         if tweet.is_a? Twitter::Tweet
           next if DB[:users].where(id: tweet.user.id).first.nil? and check_for_user
-          tw = {id: tweet.id, text: tweet.full_text, author: tweet.user.screen_name, created_at: tweet.created_at}
+          tw = {id: tweet.id, text: tweet.full_text, author: tweet.user.screen_name, created_at: tweet.created_at, url: tweet.uri.to_s}
           DB[:tweets].insert(tw)
-          puts "#{tw[:author]} just tweeted"
           if tweet.hashtags?
             tweet.hashtags.each do |hashtag|
               hashtag_id = DB[:hashtags].select(:id).where(hashtag: hashtag.text).get(:id) || DB[:hashtags].insert(hashtag: hashtag.text)

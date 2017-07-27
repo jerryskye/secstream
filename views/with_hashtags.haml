@@ -8,7 +8,7 @@
   %li{role: 'presentation'}
     %a{href: url('/choose_hashtags')} Choose which hashtags to track
 .panel.panel-default
-  %table.table.table-striped.table-condensed
+  %table.table.table-hover.table-condensed
     %thead
       %tr
         %th Author
@@ -17,7 +17,7 @@
         %th Created at
     %tbody
       -@tweets_with_hashtags.each do |tweet|
-        %tr
+        %tr{onclick: ("window.open('#{tweet[:url]}', '_blank');" if tweet[:url])}
           %td=tweet[:author]
           %td=tweet[:text]
           %td=tweet[:hashtags]

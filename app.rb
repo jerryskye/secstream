@@ -25,7 +25,7 @@ class App < Roda
     r.get 'with_hashtags' do
       @tweets_with_hashtags = DB[:hashtags].join(:hashtags_tweets, :hashtag_id => :id)
         .join(:tweets, :id => :tweet_id)
-        .select(:author, :text, :created_at, Sequel::SQL::Function.new(:group_concat, :hashtag).as(:hashtags))
+        .select(:author, :text, :created_at, :url, Sequel::SQL::Function.new(:group_concat, :hashtag).as(:hashtags))
         .order(Sequel.desc(:created_at))
         .group(:tweet_id)
       view :with_hashtags
@@ -46,7 +46,7 @@ class App < Roda
     end
 
     r.post 'choose_hashtags' do
-      r.redirect url('/choose_hashtags') if r['hashtags'].nil?
+      return 'You have to choose at least one' if r['hashtags'].nil?
       hashtags = DB[:hashtags].where(id: r['hashtags'].map(&:to_i)).map(:hashtag).join(',')
       jid = Sidekiq.redis {|r| r.get('hashtag_stream_jid')}
       StreamWorker.cancel!(jid) unless jid.nil?
