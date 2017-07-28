@@ -55,7 +55,7 @@ class App < Roda
     end
 
     r.get 'hashtag', Integer do |hashtag_id|
-      @tweets = DB[:hashtags_tweets].where(hashtag_id: hashtag_id).join(:tweets, :id => :tweet_id)
+      @tweets = DB[:hashtags_tweets].where(hashtag_id: hashtag_id).join(:tweets, :id => :tweet_id).order(Sequel.desc(:created_at))
       view :hashtag
     end
 

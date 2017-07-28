@@ -10,6 +10,7 @@ class StreamWorker
   DB = Sequel.connect(CONFIG[:db])
 
   def perform(args)
+    return if cancelled?
     client = Twitter::Streaming::Client.new(CONFIG[:client])
     check_for_user = args.has_key? 'follow'
     puts args
